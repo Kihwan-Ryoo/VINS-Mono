@@ -77,13 +77,13 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
     else
         ptr = cv_bridge::toCvCopy(img_msg, sensor_msgs::image_encodings::MONO8);
 
-    cv::Mat show_img = ptr->image;
+    cv::Mat show_img = ptr->image; // Image data for use with OpenCV
     TicToc t_r;
     for (int i = 0; i < NUM_OF_CAM; i++)
     {
         ROS_DEBUG("processing camera %d", i);
         if (i != 1 || !STEREO_TRACK)
-            trackerData[i].readImage(ptr->image.rowRange(ROW * i, ROW * (i + 1)), img_msg->header.stamp.toSec());
+            trackerData[i].readImage(ptr->image.rowRange(ROW * i, ROW * (i + 1)), img_msg->header.stamp.toSec()); /////
         else
         {
             if (EQUALIZE)
@@ -96,7 +96,7 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
         }
 
 #if SHOW_UNDISTORTION
-        trackerData[i].showUndistortion("undistrotion_" + std::to_string(i));
+        trackerData[i].showUndistortion("undistortion_" + std::to_string(i));
 #endif
     }
 
@@ -211,7 +211,7 @@ int main(int argc, char **argv)
     readParameters(n);
 
     for (int i = 0; i < NUM_OF_CAM; i++)
-        trackerData[i].readIntrinsicParameter(CAM_NAMES[i]);
+        trackerData[i].readIntrinsicParameter(CAM_NAMES[i]); // read intrinsic parameters from config file
 
     if(FISHEYE)
     {
@@ -228,7 +228,7 @@ int main(int argc, char **argv)
         }
     }
 
-    ros::Subscriber sub_img = n.subscribe(IMAGE_TOPIC, 100, img_callback);
+    ros::Subscriber sub_img = n.subscribe(IMAGE_TOPIC, 100, img_callback); /////
 
     pub_img = n.advertise<sensor_msgs::PointCloud>("feature", 1000);
     pub_match = n.advertise<sensor_msgs::Image>("feature_img",1000);
