@@ -155,7 +155,7 @@ void FeatureTracker::readImage(const cv::Mat &_img, double _cur_time) /////core/
 
         ROS_DEBUG("add feature begins");
         TicToc t_a;
-        addPoints(); // 2-D features are (first undistored, and then,) projected to a unit sphere (after passing outlier rejection.) -- right???
+        addPoints(); // add new features to forw_pts, ids, track_cnt
         ROS_DEBUG("selectFeature costs: %fms", t_a.toc());
     }
     prev_img = cur_img;
@@ -163,7 +163,7 @@ void FeatureTracker::readImage(const cv::Mat &_img, double _cur_time) /////core/
     prev_un_pts = cur_un_pts;
     cur_img = forw_img;
     cur_pts = forw_pts;
-    undistortedPoints();
+    undistortedPoints(); // 2-D features are (first undistored, and then,) projected to a unit sphere (after passing outlier rejection.)
     prev_time = cur_time;
 }
 
@@ -206,7 +206,7 @@ bool FeatureTracker::updateID(unsigned int i)
 {
     if (i < ids.size())
     {
-        if (ids[i] == -1)
+        if (ids[i] == -1) // new detected features
             ids[i] = n_id++;
         return true;
     }
@@ -265,7 +265,7 @@ void FeatureTracker::undistortedPoints()
     {
         Eigen::Vector2d a(cur_pts[i].x, cur_pts[i].y);
         Eigen::Vector3d b;
-        m_camera->liftProjective(a, b);
+        m_camera->liftProjective(a, b); // 2D -> 3D
         cur_un_pts.push_back(cv::Point2f(b.x() / b.z(), b.y() / b.z()));
         cur_un_pts_map.insert(make_pair(ids[i], cv::Point2f(b.x() / b.z(), b.y() / b.z())));
         //printf("cur pts id %d %f %f", ids[i], cur_un_pts[i].x, cur_un_pts[i].y);
@@ -285,7 +285,7 @@ void FeatureTracker::undistortedPoints()
                 {
                     double v_x = (cur_un_pts[i].x - it->second.x) / dt;
                     double v_y = (cur_un_pts[i].y - it->second.y) / dt;
-                    pts_velocity.push_back(cv::Point2f(v_x, v_y));
+                    pts_velocity.push_back(cv::Point2f(v_x, v_y)); // get points velocity
                 }
                 else
                     pts_velocity.push_back(cv::Point2f(0, 0));
